@@ -1,0 +1,6 @@
+enum TYPE_OF_CONNECTION{
+    LOCALHOST,
+    URL
+}
+
+export default TYPE_OF_CONNECTION
