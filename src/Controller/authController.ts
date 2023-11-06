@@ -1,9 +1,22 @@
 import express from 'express'
-import DbSingleton from '../db/dbSingleton'
+import DbSingleton from '../infra/db/dbSingleton'
 
 class AuthController{
     
-    login(req:express.Request,res:express.Response){}
+    async login(req:express.Request,res:express.Response){
+        const clientDb = DbSingleton.getClient()
+        const {mail,pass} = req.body
+
+        const getElementByName = await clientDb?.query(`SELECT * from users WHERE email = '${mail}'`)
+        
+        if(getElementByName?.rows.length == 0) return res.status(401).json({code:'Unauthorized'.toUpperCase(),message:'Your email and password are wrong'})
+
+        const passDb = getElementByName?.rows[0].pass
+        
+        if(pass != passDb) return res.status(401).json({code:'Unauthorized'.toUpperCase(),message:'Your email and password are wrong'})
+
+        return res.status(200).json({code:'success'.toUpperCase(),message:'login success',content:getElementByName?.rows[0]})
+    }
 
     async register(req:express.Request,res:express.Response){
         try{
@@ -27,6 +40,12 @@ class AuthController{
             console.log(err)
             return res.status(500).json({"ERROR":"DEU ERRO AI MEU CHAPA"})
         }
+    }
+
+    async forgotPass(req:express.Request,res:express.Response){
+        const clientDb = DbSingleton.getClient()
+        const tables = await clientDb?.query("SELECT * FROM users LEFT JOIN videos ON users.id = id_user")
+        return res.json(tables?.rows)
     }
 
    
